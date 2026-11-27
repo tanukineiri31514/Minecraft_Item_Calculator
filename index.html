@@ -1,9 +1,11 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minecraft 素材計算機</title>
+
+    <title>Minecraft Item Calculator</title>
 
     <style>
         body {
@@ -15,39 +17,57 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
+            padding: 20px 0;
         }
 
         .container {
             background: #333;
             padding: 30px;
             border-radius: 10px;
-            width: 350px;
-            text-align: center;
+            width: 380px;
+            max-width: calc(100% - 40px);
+            box-sizing: border-box;
             box-shadow: 0 5px 20px #000;
         }
 
         h1 {
+            text-align: center;
             margin-top: 0;
+            font-size: 25px;
+        }
+
+        h2 {
+            margin-top: 30px;
+            border-bottom: 1px solid #666;
+            padding-bottom: 5px;
         }
 
         input {
-            width: 90%;
+            width: 100%;
             padding: 12px;
             font-size: 20px;
             box-sizing: border-box;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
         }
 
         button {
-            width: 90%;
             padding: 12px;
             font-size: 18px;
             cursor: pointer;
+            border: none;
+            border-radius: 5px;
         }
 
-        #result {
-            margin-top: 25px;
-            text-align: left;
+        button:hover {
+            filter: brightness(1.2);
+        }
+
+        .calc-button {
+            width: 100%;
+        }
+
+        #itemResult {
+            margin-top: 20px;
             font-size: 18px;
             line-height: 1.8;
         }
@@ -63,6 +83,52 @@
             border-top: 1px solid #666;
             font-weight: bold;
         }
+
+        /* 電卓 */
+
+        .calculator {
+            margin-top: 10px;
+        }
+
+        #display {
+            width: 100%;
+            height: 55px;
+            font-size: 25px;
+            text-align: right;
+            box-sizing: border-box;
+            margin-bottom: 10px;
+        }
+
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+        }
+
+        .buttons button {
+            height: 55px;
+            font-size: 20px;
+        }
+
+        .operator {
+            background: #555;
+            color: white;
+        }
+
+        .equal {
+            background: #777;
+            color: white;
+        }
+
+        .clear {
+            background: #884444;
+            color: white;
+        }
+
+        .item-button {
+            background: #477b43;
+            color: white;
+        }
     </style>
 </head>
 
@@ -70,34 +136,97 @@
 
 <div class="container">
 
-    <h1>素材計算機</h1>
+    <h1>Minecraft Item Calculator</h1>
+
+    <!-- 素材計算機 -->
+
+    <h2>素材計算機</h2>
 
     <input
         type="number"
         id="amount"
-        placeholder="必要個数を入力"
+        placeholder="必要な個数を入力"
         min="0"
+        step="1"
     >
 
-    <button onclick="calculate()">計算</button>
+    <button class="calc-button" onclick="calculateItems()">
+        計算する
+    </button>
 
-    <div id="result"></div>
+    <div id="itemResult"></div>
+
+
+    <!-- 電卓 -->
+
+    <h2>電卓</h2>
+
+    <div class="calculator">
+
+        <input
+            type="text"
+            id="display"
+            placeholder="計算式を入力"
+            readonly
+        >
+
+        <div class="buttons">
+
+            <button onclick="add('7')">7</button>
+            <button onclick="add('8')">8</button>
+            <button onclick="add('9')">9</button>
+            <button class="operator" onclick="add('/')">÷</button>
+
+            <button onclick="add('4')">4</button>
+            <button onclick="add('5')">5</button>
+            <button onclick="add('6')">6</button>
+            <button class="operator" onclick="add('*')">×</button>
+
+            <button onclick="add('1')">1</button>
+            <button onclick="add('2')">2</button>
+            <button onclick="add('3')">3</button>
+            <button class="operator" onclick="add('-')">−</button>
+
+            <button onclick="add('0')">0</button>
+            <button onclick="add('.')">.</button>
+            <button onclick="add('(')">(</button>
+            <button onclick="add(')')">)</button>
+
+            <button class="clear" onclick="clearCalc()">消去</button>
+            <button class="operator" onclick="add('+')">＋</button>
+            <button class="equal" onclick="calculate()">＝</button>
+            <button class="item-button" onclick="sendToItems()">個数計算</button>
+
+        </div>
+
+    </div>
 
 </div>
 
 
 <script>
-function calculate() {
 
-    const amount = Number(document.getElementById("amount").value);
+/* =========================
+   素材計算機
+========================= */
 
-    if (amount < 0 || !Number.isInteger(amount)) {
-        document.getElementById("result").innerHTML =
-            "正しい個数を入力してください。";
+function calculateItems() {
+
+    const amountInput = document.getElementById("amount");
+    const amount = Number(amountInput.value);
+    const result = document.getElementById("itemResult");
+
+    if (
+        amountInput.value === "" ||
+        !Number.isSafeInteger(amount) ||
+        amount < 0
+    ) {
+        result.textContent = "0以上の整数を入力してください。";
         return;
     }
 
     // 1チェスト = 27スタック = 1728個
+
     const chest = Math.floor(amount / 1728);
     const remainder = amount % 1728;
 
@@ -105,26 +234,130 @@ function calculate() {
     const item = remainder % 64;
 
     // 合計スタック数
+
     const totalStack = amount / 64;
 
-    document.getElementById("result").innerHTML = `
-        <div class="main">${chest} チェスト</div>
-        <div>${stack} スタック</div>
-        <div>${item} 個</div>
+    result.innerHTML = `
+        <div class="main">チェスト：${chest} 箱</div>
+        <div>スタック：${stack} スタック</div>
+        <div>余り：${item} 個</div>
 
         <div class="total">
-            合計スタック数: ${totalStack}
+            合計スタック数：${totalStack}
         </div>
     `;
 }
 
 
-// Enterキーでも計算
-document.getElementById("amount").addEventListener("keydown", function(event) {
+/* =========================
+   電卓
+========================= */
+
+const display = document.getElementById("display");
+
+
+// 数字・演算子を追加
+
+function add(value) {
+
+    if (display.value === "エラー") {
+        display.value = "";
+    }
+
+    display.value += value;
+}
+
+
+// クリア
+
+function clearCalc() {
+    display.value = "";
+}
+
+
+// 計算
+
+function calculate() {
+
+    if (display.value === "") {
+        return;
+    }
+
+    try {
+
+        // 使用可能な文字を制限
+
+        if (!/^[0-9+\-*/().\s]+$/.test(display.value)) {
+            throw new Error();
+        }
+
+        const result = Function(
+            '"use strict"; return (' + display.value + ')'
+        )();
+
+        if (!Number.isFinite(result)) {
+            throw new Error();
+        }
+
+        display.value = String(result);
+
+    } catch {
+        display.value = "エラー";
+    }
+}
+
+
+/* =========================
+   電卓 → 素材計算機
+========================= */
+
+function sendToItems() {
+
+    const value = display.value;
+
+    if (value === "" || value === "エラー") {
+        alert("先に計算してください。");
+        return;
+    }
+
+    const result = Number(value);
+
+    // 0以上の整数のみ許可
+
+    if (
+        !Number.isSafeInteger(result) ||
+        result < 0
+    ) {
+        alert("0以上の整数になるように計算してください。");
+        return;
+    }
+
+    // 素材計算機に代入
+
+    document.getElementById("amount").value = result;
+
+    // 素材計算を実行
+
+    calculateItems();
+}
+
+
+/* =========================
+   キーボード操作
+========================= */
+
+document.addEventListener("keydown", function(event) {
+
     if (event.key === "Enter") {
         calculate();
     }
+
+    if (event.key === "Escape") {
+        clearCalc();
+    }
+
 });
+
 </script>
 
 </body>
