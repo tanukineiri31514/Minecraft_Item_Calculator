@@ -56,6 +56,7 @@
             cursor: pointer;
             border: none;
             border-radius: 5px;
+            touch-action: manipulation;
         }
 
         button:hover {
@@ -108,6 +109,7 @@
         .buttons button {
             height: 55px;
             font-size: 20px;
+            padding: 5px;
         }
 
         .operator {
@@ -127,6 +129,16 @@
 
         .item-button {
             background: #477b43;
+            color: white;
+        }
+
+        .buttons .item-button {
+            font-size: 15px;
+            grid-column: span 4;
+        }
+
+        .backspace {
+            background: #665544;
             color: white;
         }
     </style>
@@ -155,7 +167,6 @@
     </button>
 
     <div id="itemResult"></div>
-
 
     <!-- 電卓 -->
 
@@ -193,16 +204,19 @@
             <button onclick="add(')')">)</button>
 
             <button class="clear" onclick="clearCalc()">消去</button>
+            <button class="backspace" onclick="backspace()">⌫</button>
             <button class="operator" onclick="add('+')">＋</button>
             <button class="equal" onclick="calculate()">＝</button>
-            <button class="item-button" onclick="sendToItems()">個数計算</button>
+
+            <button class="item-button" onclick="sendToItems()">
+                個数計算
+            </button>
 
         </div>
 
     </div>
 
 </div>
-
 
 <script>
 
@@ -268,10 +282,23 @@ function add(value) {
 }
 
 
-// クリア
+// 全消去
 
 function clearCalc() {
     display.value = "";
+}
+
+
+// バックスペース（1文字削除）
+
+function backspace() {
+
+    if (display.value === "エラー") {
+        display.value = "";
+        return;
+    }
+
+    display.value = display.value.slice(0, -1);
 }
 
 
@@ -348,12 +375,50 @@ function sendToItems() {
 
 document.addEventListener("keydown", function(event) {
 
-    if (event.key === "Enter") {
+    // CtrlやAltとのショートカットは無視
+
+    if (event.ctrlKey || event.altKey || event.metaKey) {
+        return;
+    }
+
+    // 素材計算機への入力中
+
+    if (event.target.id === "amount") {
+
+        if (event.key === "Enter") {
+            event.preventDefault();
+            calculateItems();
+        }
+
+        return;
+    }
+
+    // 数字・演算子の入力
+
+    if (/^[0-9+\-*/().]$/.test(event.key)) {
+        event.preventDefault();
+        add(event.key);
+    }
+
+    // 計算
+
+    if (event.key === "Enter" || event.key === "=") {
+        event.preventDefault();
         calculate();
     }
 
+    // 全消去
+
     if (event.key === "Escape") {
+        event.preventDefault();
         clearCalc();
+    }
+
+    // バックスペース
+
+    if (event.key === "Backspace") {
+        event.preventDefault();
+        backspace();
     }
 
 });
