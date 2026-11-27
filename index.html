@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft 素材計算機</title>
+
+    <style>
+        body {
+            font-family: sans-serif;
+            background: #222;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: #333;
+            padding: 30px;
+            border-radius: 10px;
+            width: 350px;
+            text-align: center;
+            box-shadow: 0 5px 20px #000;
+        }
+
+        h1 {
+            margin-top: 0;
+        }
+
+        input {
+            width: 90%;
+            padding: 12px;
+            font-size: 20px;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+        }
+
+        button {
+            width: 90%;
+            padding: 12px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        #result {
+            margin-top: 25px;
+            text-align: left;
+            font-size: 18px;
+            line-height: 1.8;
+        }
+
+        .main {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .total {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #666;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>素材計算機</h1>
+
+    <input
+        type="number"
+        id="amount"
+        placeholder="必要個数を入力"
+        min="0"
+    >
+
+    <button onclick="calculate()">計算</button>
+
+    <div id="result"></div>
+
+</div>
+
+
+<script>
+function calculate() {
+
+    const amount = Number(document.getElementById("amount").value);
+
+    if (amount < 0 || !Number.isInteger(amount)) {
+        document.getElementById("result").innerHTML =
+            "正しい個数を入力してください。";
+        return;
+    }
+
+    // 1チェスト = 27スタック = 1728個
+    const chest = Math.floor(amount / 1728);
+    const remainder = amount % 1728;
+
+    const stack = Math.floor(remainder / 64);
+    const item = remainder % 64;
+
+    // 合計スタック数
+    const totalStack = amount / 64;
+
+    document.getElementById("result").innerHTML = `
+        <div class="main">${chest} チェスト</div>
+        <div>${stack} スタック</div>
+        <div>${item} 個</div>
+
+        <div class="total">
+            合計スタック数: ${totalStack}
+        </div>
+    `;
+}
+
+
+// Enterキーでも計算
+document.getElementById("amount").addEventListener("keydown", function(event) {
+    if (event.key === "Enter") {
+        calculate();
+    }
+});
+</script>
+
+</body>
+</html>
